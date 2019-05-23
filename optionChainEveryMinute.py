@@ -8,8 +8,10 @@ Created on Wed May 22 20:47:55 2019
 import csv
 from urllib.request import urlopen,Request
 from bs4 import BeautifulSoup
-from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
+import schedule
+import time
+import os
 
 def mainMethod():
     site = "https://www.nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?symbolCode=-10006&symbol=NIFTY&symbol=NIFTY&instrument=-&date=-&segmentLink=17&symbolCount=2&segmentLink=17"
@@ -27,7 +29,11 @@ def mainMethod():
     rows = table.findAll("tr")
     print("working on: " + str(datetime.now()))
     
-    with open(str(datetime.now())+".csv", "wt+", newline="") as f:
+    dirName = str(datetime.now().year).zfill(4) + str(datetime.now().month).zfill(2) + str(datetime.now().day).zfill(2)
+    if(not os.path.isdir(dirName)):
+        os.makedirs(dirName)
+    
+    with open(dirName+'/'+str(datetime.now().hour)+"_"+str(datetime.now().minute)+".csv", "wt+", newline="") as f:
         writer = csv.writer(f)
         for row in rows:
             csv_row = []
@@ -35,7 +41,8 @@ def mainMethod():
                 csv_row.append(cell.get_text())
             writer.writerow(csv_row)
 
-REFRESH_INTERVAL = 60
-scheduler = BackgroundScheduler()
-scheduler.start()
-scheduler.add_job(mainMethod, 'interval', seconds = REFRESH_INTERVAL)
+#mainMethod()
+schedule.every(1).minute.do(mainMethod)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
