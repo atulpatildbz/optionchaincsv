@@ -38,7 +38,7 @@ def mainMethod():
         for row in rows:
             csv_row = []
             for cell in row.findAll(["td", "th"]):
-                csv_row.append(cell.get_text())
+                csv_row.append(''.join(cell.get_text().split()))
             writer.writerow(csv_row)
 
 #mainMethod()
